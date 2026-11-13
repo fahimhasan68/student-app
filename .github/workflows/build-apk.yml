@@ -26,6 +26,11 @@ jobs:
 
       - name: Install Capacitor and Add Android
         run: |
+          mkdir -p www
+          cp *.html www/ 2>/dev/null || true
+          cp *.js www/ 2>/dev/null || true
+          cp *.css www/ 2>/dev/null || true
+          cp *.json www/ 2>/dev/null || true
           npm install
           npx cap add android
           npx cap sync
