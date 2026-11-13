@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>স্টুডেন্ট পড়া ও পরীক্ষা ট্র্যাকার | SSC & HSC</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Hind Siliguri & Noto Sans Bengali -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Hind Siliguri"', '"Noto Sans Bengali"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .calendar-cell {
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+    .calendar-cell:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">স্টুডেন্ট পড়া ও পরীক্ষা ট্র্যাকার</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">SSC ও HSC বিজ্ঞান বিভাগ (NCTB সিলেবাস)</p>
+        </div>
+      </div>
+
+      <!-- Sync Status Badge -->
+      <div class="flex items-center gap-2">
+        <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          সংযুক্ত হচ্ছে...
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Control Bar: Add Student & Select Student -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- Card 1: Add New Student -->
+      <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+        <div class="flex items-center gap-2 mb-3.5">
+          <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-800">নতুন স্টুডেন্ট যোগ করুন</h2>
+        </div>
+
+        <form id="addStudentForm" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-5">
+            <label for="studentNameInput" class="block text-xs font-semibold text-slate-600 mb-1">স্টুডেন্টের নাম</label>
+            <input 
+              type="text" 
+              id="studentNameInput" 
+              placeholder="যেমন: তানভীর আহমেদ" 
+              required
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            />
+          </div>
+          <div class="sm:col-span-4">
+            <label for="studentClassSelect" class="block text-xs font-semibold text-slate-600 mb-1">কোন শ্রেণিতে পড়ে</label>
+            <select 
+              id="studentClassSelect" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            >
+              <option value="SSC">SSC (৯ম-১০ম শ্রেণি)</option>
+              <option value="HSC">HSC (একাদশ-দ্বাদশ শ্রেণি)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-3 flex items-end">
+            <button 
+              type="submit" 
+              class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm shadow-sm shadow-indigo-200 transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-solid fa-check"></i>
+              <span>সেভ করুন</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Card 2: Select Active Student -->
+      <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3.5">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <h2 class="text-base font-bold text-slate-800">স্টুডেন্ট নির্বাচন করুন</h2>
+            </div>
+            <span id="totalStudentsBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">মোট: ০ জন</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <select 
+                id="activeStudentDropdown" 
+                class="w-full pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition appearance-none cursor-pointer"
+              >
+                <option value="">-- কোনো স্টুডেন্ট নেই --</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+
+            <button 
+              id="deleteStudentBtn" 
+              type="button"
+              title="নির্বাচিত স্টুডেন্ট মুছুন"
+              class="hidden p-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 transition cursor-pointer"
+            >
+              <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+          </div>
+        </div>
+        <p id="selectedStudentHelper" class="text-xs text-slate-500 mt-2.5">
+          তালিকা থেকে স্টুডেন্ট সিলেক্ট করলে নিচে তার পড়া, পরীক্ষা ও ক্যালেন্ডার দেখা যাবে।
+        </p>
+      </div>
+    </section>
+
+    <!-- Empty State (Shown when no student exists) -->
+    <div id="emptyStateContainer" class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4 text-2xl">
+        <i class="fa-solid fa-book-open-reader"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1">এখনো কোনো স্টুডেন্ট যুক্ত করা হয়নি</h3>
+      <p class="text-sm text-slate-500 max-w-md mx-auto">
+        উপরের ফর্মে স্টুডেন্টের নাম এবং শ্রেণি (SSC বা HSC) লিখে <strong>"সেভ করুন"</strong> বাটনে ক্লিক করুন। সাথে সাথেই তার ড্যাশবোর্ড খুলে যাবে।
+      </p>
+    </div>
+
+    <!-- Active Student Workspace (2 Sections) -->
+    <div id="studentWorkspace" class="hidden space-y-6">
+      
+      <!-- Student Active Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div id="studentAvatar" class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/20 flex items-center justify-center text-xl font-bold text-white">
+            আ
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2 id="activeStudentNameDisplay" class="text-xl font-bold tracking-tight">স্টুডেন্টের নাম</h2>
+              <span id="activeStudentClassBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/30 border border-indigo-400/40 text-indigo-100">
+                HSC বিজ্ঞান
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">পড়া ও পরীক্ষার রুটিন এবং উপস্থিতি ক্যালেন্ডার</p>
+          </div>
+        </div>
+
+        <!-- Quick Stats Pills -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/10 text-xs">
+            <span class="text-slate-300">চলমান পড়া:</span>
+            <strong id="bannerStudyCount" class="text-sky-300 text-sm ml-1">০</strong>
+          </div>
+          <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/10 text-xs">
+            <span class="text-slate-300">নির্ধারিত পরীক্ষা:</span>
+            <strong id="bannerExamCount" class="text-amber-300 text-sm ml-1">০</strong>
+          </div>
+          <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/10 text-xs">
+            <span class="text-slate-300">এই মাসে পড়ানো:</span>
+            <strong id="bannerTaughtCount" class="text-emerald-300 text-sm ml-1">০ দিন</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main 2-Section Grid -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        
+        <!-- ========================================================= -->
+        <!-- SECTION 1: STUDY & EXAM ASSIGNMENT (পড়া ও পরীক্ষা নির্ধারণ) -->
+        <!-- ========================================================= -->
+        <section class="xl:col-span-5 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div class="px-5 py-4 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-xs">১</span>
+              <div>
+                <h3 class="text-base font-bold text-slate-800">পড়া ও পরীক্ষার অ্যাসাইনমেন্ট</h3>
+                <p class="text-xs text-slate-500">সাবজেক্ট, অধ্যায় ও পরীক্ষার তারিখ নির্ধারণ করুন</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <!-- Task Creation Form -->
+            <form id="taskForm" class="space-y-3.5">
+              <!-- Subject -->
+              <div>
+                <label for="subjectSelect" class="block text-xs font-semibold text-slate-700 mb-1">সাবজেক্ট নির্বাচন করুন</label>
+                <select id="subjectSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </select>
+              </div>
+
+              <!-- Chapter -->
+              <div>
+                <label for="chapterSelect" class="block text-xs font-semibold text-slate-700 mb-1">অধ্যায় নির্বাচন করুন</label>
+                <select id="chapterSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </select>
+              </div>
+
+              <!-- Type & Date Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="taskTypeSelect" class="block text-xs font-semibold text-slate-700 mb-1">ধরন (পড়া নাকি পরীক্ষা)</label>
+                  <select id="taskTypeSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <option value="পড়া">📘 পড়া (Study)</option>
+                    <option value="পরীক্ষা">📝 পরীক্ষা (Exam)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label id="taskDateLabel" for="taskDateInput" class="block text-xs font-semibold text-slate-700 mb-1">পড়া জমা দেওয়ার তারিখ</label>
+                  <input 
+                    type="date" 
+                    id="taskDateInput" 
+                    required
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  />
+                </div>
+              </div>
+
+              <!-- Page Range / Details -->
+              <div>
+                <label for="taskDetailsInput" class="block text-xs font-semibold text-slate-700 mb-1">ডিটেইলস (কত থেকে কত পৃষ্ঠা / টপিক)</label>
+                <input 
+                  type="text" 
+                  id="taskDetailsInput" 
+                  placeholder="যেমন: পৃষ্ঠা ১৫ - ২৮, অনুশীলনীর সৃজনশীল ১-৫" 
+                  required
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm shadow-sm shadow-indigo-200 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i class="fa-solid fa-plus-circle"></i>
+                <span>অ্যাসাইনমেন্ট যুক্ত করুন</span>
+              </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="border-t border-slate-200 pt-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-bold text-slate-800">নির্ধারিত পড়া ও পরীক্ষার তালিকা</h4>
+                <div class="flex items-center gap-1 text-xs">
+                  <button type="button" data-filter="ALL" class="task-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-indigo-100 text-indigo-700 cursor-pointer">সব</button>
+                  <button type="button" data-filter="পড়া" class="task-filter-btn px-2.5 py-1 rounded-lg font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">পড়া</button>
+                  <button type="button" data-filter="পরীক্ষা" class="task-filter-btn px-2.5 py-1 rounded-lg font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">পরীক্ষা</button>
+                </div>
+              </div>
+
+              <!-- Task List Container -->
+              <div id="taskListContainer" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+                <!-- Tasks rendered here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 2: TEACHING ATTENDANCE & EXAM CALENDAR            -->
+        <!-- ========================================================= -->
+        <section class="xl:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div class="px-5 py-4 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shadow-xs">২</span>
+              <div>
+                <h3 class="text-base font-bold text-slate-800">পড়ানোর দিন ও পরীক্ষার ক্যালেন্ডার</h3>
+                <p class="text-xs text-slate-500">যেই দিন পড়াবেন সেই তারিখে ক্লিক করে সিলেক্ট করুন</p>
+              </div>
+            </div>
+
+            <!-- Month Summary Counter Badge -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="monthTaughtSummary" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <i class="fa-solid fa-calendar-check"></i>
+                এই মাসে মোট পড়ানো হয়েছে: ০ দিন
+              </span>
+              <span id="monthExamSummary" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                <i class="fa-solid fa-file-pen"></i>
+                পরীক্ষা: ০ টি
+              </span>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <!-- Calendar Header Controls -->
+            <div class="flex items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
+              <button 
+                id="prevMonthBtn" 
+                type="button"
+                class="px-3 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold shadow-2xs transition flex items-center gap-1 cursor-pointer"
+              >
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>আগের মাস</span>
+              </button>
+
+              <div class="text-center">
+                <h4 id="currentMonthYearLabel" class="text-base sm:text-lg font-bold text-slate-900">নভেম্বর ২০২৬</h4>
+                <button id="goTodayBtn" type="button" class="text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer">আজকের মাসে যান</button>
+              </div>
+
+              <button 
+                id="nextMonthBtn" 
+                type="button"
+                class="px-3 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold shadow-2xs transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>পরের মাস</span>
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 px-1">
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3.5 h-3.5 rounded-md bg-emerald-500 inline-block shadow-2xs"></span>
+                  <span class="font-medium">পড়ানো হয়েছে (ক্লিক করে অন/অফ করুন)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 border border-rose-300 text-[10px] font-bold">পরীক্ষা আছে</span>
+                  <span class="font-medium">নির্ধারিত পরীক্ষার তারিখ</span>
+                </div>
+              </div>
+              <span class="text-[11px] text-slate-400 hidden sm:inline">তারিখে ক্লিক করলেই অটোমেটিক সেভ হবে</span>
+            </div>
+
+            <!-- Days of Week Header -->
+            <div class="grid grid-cols-7 gap-1.5 text-center">
+              <div class="py-2 text-xs font-bold text-rose-600 bg-rose-50/70 rounded-lg">রবি</div>
+              <div class="py-2 text-xs font-bold text-slate-600 bg-slate-100/80 rounded-lg">সোম</div>
+              <div class="py-2 text-xs font-bold text-slate-600 bg-slate-100/80 rounded-lg">মঙ্গল</div>
+              <div class="py-2 text-xs font-bold text-slate-600 bg-slate-100/80 rounded-lg">বুধ</div>
+              <div class="py-2 text-xs font-bold text-slate-600 bg-slate-100/80 rounded-lg">বৃহঃ</div>
+              <div class="py-2 text-xs font-bold text-emerald-700 bg-emerald-50/70 rounded-lg">শুক্র</div>
+              <div class="py-2 text-xs font-bold text-slate-600 bg-slate-100/80 rounded-lg">শনি</div>
+            </div>
+
+            <!-- Calendar Grid Cells -->
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+              <!-- Dynamic dates generated here -->
+            </div>
+
+            <!-- Upcoming Exams Strip -->
+            <div class="mt-4 pt-4 border-t border-slate-200">
+              <div class="flex items-center gap-2 mb-2.5">
+                <i class="fa-solid fa-bell text-rose-500 text-sm"></i>
+                <h4 class="text-sm font-bold text-slate-800">আসন্ন পরীক্ষার সময়সূচি</h4>
+              </div>
+              <div id="upcomingExamsStrip" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Upcoming exams listed here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Custom Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Custom Confirmation Modal (No browser confirm/alert) -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">নিশ্চিত করুন</h3>
+      </div>
+      <p id="confirmModalMessage" class="text-sm text-slate-600">আপনি কি নিশ্চিতভাবে এটি মুছে ফেলতে চান?</p>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button id="confirmCancelBtn" type="button" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer">বাতিল</button>
+        <button id="confirmProceedBtn" type="button" class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 cursor-pointer">মুছে ফেলুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase + App Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. NCTB SCIENCE CURRICULUM DATA (SSC & HSC BANGLA)
+    // =========================================================================
+    const CURRICULUM = {
+      SSC: {
+        "পদার্থবিজ্ঞান (Physics)": [
+          "অধ্যায় ১: ভৌত রাশি এবং পরিমাপ",
+          "অধ্যায় ২: গতি",
+          "অধ্যায় ৩: বল",
+          "অধ্যায় ৪: কাজ, ক্ষমতা ও শক্তি",
+          "অধ্যায় ৫: পদার্থের অবস্থা ও চাপ",
+          "অধ্যায় ৬: বস্তুর ওপর তাপের প্রভাব",
+          "অধ্যায় ৭: তরঙ্গ ও শব্দ",
+          "অধ্যায় ৮: আলোর প্রতিফলন",
+          "অধ্যায় ৯: আলোর প্রতিসরণ",
+          "অধ্যায় ১০: স্থির তড়িৎ",
+          "অধ্যায় ১১: চল তড়িৎ",
+          "অধ্যায় ১২: তড়িতের চৌম্বক ক্রিয়া",
+          "অধ্যায় ১৩: আধুনিক পদার্থবিজ্ঞান ও ইলেকট্রনিক্স",
+          "অধ্যায় ১৪: জীবন বাঁচাতে পদার্থবিজ্ঞান"
+        ],
+        "রসায়ন (Chemistry)": [
+          "অধ্যায় ১: রসায়নের ধারণা",
+          "অধ্যায় ২: পদার্থের অবস্থা",
+          "অধ্যায় ৩: পদার্থের গঠন",
+          "অধ্যায় ৪: পর্যায় সারণি",
+          "অধ্যায় ৫: রাসায়নিক বন্ধন",
+          "অধ্যায় ৬: মোলের ধারণা ও রাসায়নিক গণনা",
+          "অধ্যায় ৭: রাসায়নিক বিক্রিয়া",
+          "অধ্যায় ৮: রসায়ন ও শক্তি",
+          "অধ্যায় ৯: এসিড-ক্ষারক সমতা",
+          "অধ্যায় ১০: খনিজ সম্পদ: ধাতু-অধাতু",
+          "অধ্যায় ১১: খনিজ সম্পদ-জীবাশ্ম",
+          "অধ্যায় ১২: আমাদের জীবনে রসায়ন"
+        ],
+        "সাধারণ গণিত (General Math)": [
+          "অধ্যায় ১: বাস্তব সংখ্যা",
+          "অধ্যায় ২: সেট ও ফাংশন",
+          "অধ্যায় ৩: বীজগাণিতিক রাশি",
+          "অধ্যায় ৪: সূচক ও লগারিদম",
+          "অধ্যায় ৫: এক চলকবিশিষ্ট সমীকরণ",
+          "অধ্যায় ৬: রেখা, কোণ ও ত্রিভুজ",
+          "অধ্যায় ৭: ব্যবহারিক জ্যামিতি",
+          "অধ্যায় ৮: বৃত্ত",
+          "অধ্যায় ৯: ত্রিকোণমিতিক অনুপাত",
+          "অধ্যায় ১০: দূরত্ব ও উচ্চতা",
+          "অধ্যায় ১১: বীজগাণিতিক অনুপাত ও সমানুপাত",
+          "অধ্যায় ১২: দুই চলকবিশিষ্ট সরল সহসমীকরণ",
+          "অধ্যায় ১৩: সসীম ধারা",
+          "অধ্যায় ১৪: অনুপাত, সদৃশতা ও প্রতিসমতা",
+          "অধ্যায় ১৫: ক্ষেত্রফল সম্পর্কিত উপপাদ্য ও সম্পাদ্য",
+          "অধ্যায় ১৬: পরিমিতি",
+          "অধ্যায় ১৭: পরিসংখ্যান"
+        ],
+        "উচ্চতর গণিত (Higher Math)": [
+          "অধ্যায় ১: সেট ও ফাংশন",
+          "অধ্যায় ২: বীজগাণিতিক রাশি",
+          "অধ্যায় ৩: জ্যামিতি",
+          "অধ্যায় ৪: জ্যামিতিক অঙ্কন",
+          "অধ্যায় ৫: সমীকরণ",
+          "অধ্যায় ৬: অসমতা",
+          "অধ্যায় ৭: অসীম ধারা",
+          "অধ্যায় ৮: ত্রিকোণমিতি",
+          "অধ্যায় ৯: সূচকীয় ও লগারিদমীয় ফাংশন",
+          "অধ্যায় ১০: দ্বিপদী বিস্তৃতি",
+          "অধ্যায় ১১: স্থানাঙ্ক জ্যামিতি",
+          "অধ্যায় ১২: সমতলীয় ভেক্টর",
+          "অধ্যায় ১৩: ঘন জ্যামিতি",
+          "অধ্যায় ১৪: সম্ভাবনা"
+        ],
+        "জীববিজ্ঞান (Biology)": [
+          "অধ্যায় ১: জীবন পাঠ",
+          "অধ্যায় ২: জীবকোষ ও টিস্যু",
+          "অধ্যায় ৩: কোষ বিভাজন",
+          "অধ্যায় ৪: জীবনীশক্তি",
+          "অধ্যায় ৫: খাদ্য, পুষ্টি এবং পরিপাক",
+          "অধ্যায় ৬: জীবে পরিবহন",
+          "অধ্যায় ৭: গ্যাসীয় বিনিময়",
+          "অধ্যায় ৮: রেচন প্রক্রিয়া",
+          "অধ্যায় ৯: দৃঢ়তা প্রদান ও চলন",
+          "অধ্যায় ১০: সমন্বয়",
+          "অধ্যায় ১১: জীবের প্রজনন",
+          "অধ্যায় ১২: জীবের বংশগতি ও বিবর্তন",
+          "অধ্যায় ১৩: জীবের পরিবেশ",
+          "অধ্যায় ১৪: জীবপ্রযুক্তি"
+        ],
+        "তথ্য ও যোগাযোগ প্রযুক্তি (ICT)": [
+          "অধ্যায় ১: তথ্য ও যোগাযোগ প্রযুক্তি এবং আমাদের বাংলাদেশ",
+          "অধ্যায় ২: কম্পিউটার ও কম্পিউটার ব্যবহারকারীর নিরাপত্তা",
+          "অধ্যায় ৩: আমার শিক্ষায় ইন্টারনেট",
+          "অধ্যায় ৪: আমার লেখালেখি ও হিসাব",
+          "অধ্যায় ৫: মাল্টিমিডিয়া ও গ্রাফিক্স",
+          "অধ্যায় ৬: ডেটাবেজ ও এর ব্যবহার"
+        ]
+      },
+      HSC: {
+        "পদার্থবিজ্ঞান ১ম পত্র": [
+          "অধ্যায় ১: ভৌত জগৎ ও পরিমাপ",
+          "অধ্যায় ২: ভেক্টর",
+          "অধ্যায় ৩: গতিবিদ্যা",
+          "অধ্যায় ৪: নিউটনিয়ান বলবিদ্যা",
+          "অধ্যায় ৫: কাজ, শক্তি ও ক্ষমতা",
+          "অধ্যায় ৬: মহাকর্ষ ও অভিকর্ষ",
+          "অধ্যায় ৭: পদার্থের গাঠনিক ধর্ম",
+          "অধ্যায় ৮: পর্যাবৃত্ত গতি",
+          "অধ্যায় ৯: তরঙ্গ",
+          "অধ্যায় ১০: আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"
+        ],
+        "পদার্থবিজ্ঞান ২য় পত্র": [
+          "অধ্যায় ১: তাপগতিবিদ্যা",
+          "অধ্যায় ২: স্থির তড়িৎ",
+          "অধ্যায় ৩: চল তড়িৎ",
+          "অধ্যায় ৪: তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব",
+          "অধ্যায় ৫: তাড়িতচৌম্বক আবেশ ও পরিবর্তী প্রবাহ",
+          "অধ্যায় ৬: জ্যামিতিক আলোকবিজ্ঞান",
+          "অধ্যায় ৭: ভৌত আলোকবিজ্ঞান",
+          "অধ্যায় ৮: আধুনিক পদার্থবিজ্ঞানের সূচনা",
+          "অধ্যায় ৯: পরমাণুর মডেল এবং নিউক্লিয়ার পদার্থবিজ্ঞান",
+          "অধ্যায় ১০: সেমিকন্ডাক্টর ও ইলেকট্রনিক্স",
+          "অধ্যায় ১১: জ্যোতির্বিজ্ঞান"
+        ],
+        "রসায়ন ১ম পত্র": [
+          "অধ্যায় ১: ল্যাবরেটরির নিরাপদ ব্যবহার",
+          "অধ্যায় ২: গুণগত রসায়ন",
+          "অধ্যায় ৩: মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন",
+          "অধ্যায় ৪: রাসায়নিক পরিবর্তন",
+          "অধ্যায় ৫: কর্মমুখী রসায়ন"
+        ],
+        "রসায়ন ২য় পত্র": [
+          "অধ্যায় ১: পরিবেশ রসায়ন",
+          "অধ্যায় ২: জৈব রসায়ন",
+          "অধ্যায় ৩: পরিমাণগত রসায়ন",
+          "অধ্যায় ৪: তড়িৎ রসায়ন",
+          "অধ্যায় ৫: অর্থনৈতিক রসায়ন"
+        ],
+        "উচ্চতর গণিত ১ম পত্র": [
+          "অধ্যায় ১: ম্যাট্রিক্স ও নির্ণায়ক",
+          "অধ্যায় ২: ভেক্টর",
+          "অধ্যায় ৩: সরলরেখা",
+          "অধ্যায় ৪: বৃত্ত",
+          "অধ্যায় ৫: বিন্যাস ও সমাবেশ",
+          "অধ্যায় ৬: ত্রিকোণমিতিক অনুপাত",
+          "অধ্যায় ৭: সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত",
+          "অধ্যায় ৮: ফাংশন ও ফাংশনের লেখচিত্র",
+          "অধ্যায় ৯: অন্তরীকরণ",
+          "অধ্যায় ১০: যোগজীকরণ"
+        ],
+        "উচ্চতর গণিত ২য় পত্র": [
+          "অধ্যায় ১: বাস্তব সংখ্যা ও অসমতা",
+          "অধ্যায় ২: যোগাশ্রয়ী প্রোগ্রাম",
+          "অধ্যায় ৩: জটিল সংখ্যা",
+          "অধ্যায় ৪: বহুপদী ও বহুপদী সমীকরণ",
+          "অধ্যায় ৫: দ্বিপদী বিস্তৃতি",
+          "অধ্যায় ৬: কনিক",
+          "অধ্যায় ৭: বিপরীত ত্রিকোণমিতিক ফাংশন ও ত্রিকোণমিতিক সমীকরণ",
+          "অধ্যায় ৮: স্থিতিবিদ্যা",
+          "অধ্যায় ৯: সমতলে বস্তুকণার গতি",
+          "অধ্যায় ১০: বিস্তার পরিমাপ ও সম্ভাবনা"
+        ],
+        "জীববিজ্ঞান ১ম পত্র": [
+          "অধ্যায় ১: কোষ ও এর গঠন",
+          "অধ্যায় ২: কোষ বিভাজন",
+          "অধ্যায় ৩: কোষ রসায়ন",
+          "অধ্যায় ৪: অণুজীব",
+          "অধ্যায় ৫: শৈবাল ও ছত্রাক",
+          "অধ্যায় ৬: ব্রায়োফাইটা ও টেরিডোফাইটা",
+          "অধ্যায় ৭: নগ্নবীজী ও আবৃতবীজী উদ্ভিদ",
+          "অধ্যায় ৮: টিস্যু ও টিস্যুতন্ত্র",
+          "অধ্যায় ৯: উদ্ভিদ শারীরতত্ত্ব",
+          "অধ্যায় ১০: উদ্ভিদ প্রজনন",
+          "অধ্যায় ১১: জীবপ্রযুক্তি",
+          "অধ্যায় ১২: জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"
+        ],
+        "জীববিজ্ঞান ২য় পত্র": [
+          "অধ্যায় ১: প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস",
+          "অধ্যায় ২: প্রাণীর পরিচিতি (হাইড্রা, ঘাসফড়িং, রুই মাছ)",
+          "অধ্যায় ৩: মানব শারীরতত্ত্ব: পরিপাক ও শোষণ",
+          "অধ্যায় ৪: মানব শারীরতত্ত্ব: রক্ত ও সঞ্চালন",
+          "অধ্যায় ৫: মানব শারীরতত্ত্ব: শ্বাসক্রিয়া ও শ্বসন",
+          "অধ্যায় ৬: মানব শারীরতত্ত্ব: বর্জ্য ও নিষ্কাশন",
+          "অধ্যায় ৭: মানব শারীরতত্ত্ব: চলন ও অঙ্গচালনা",
+          "অধ্যায় ৮: মানব শারীরতত্ত্ব: সমন্বয় ও নিয়ন্ত্রণ",
+          "অধ্যায় ৯: মানব জীবনের ধারাবাহিকতা",
+          "অধ্যায় ১০: মানবদেহের প্রতিরক্ষা",
+          "অধ্যায় ১১: জিনতত্ত্ব ও বিবর্তন",
+          "অধ্যায় ১২: প্রাণীর আচরণ"
+        ],
+        "তথ্য ও যোগাযোগ প্রযুক্তি (ICT)": [
+          "অধ্যায় ১: তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত",
+          "অধ্যায় ২: কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং",
+          "অধ্যায় ৩: সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস",
+          "অধ্যায় ৪: ওয়েব ডিজাইন পরিচিতি এবং HTML",
+          "অধ্যায় ৫: প্রোগ্রামিং ভাষা",
+          "অধ্যায় ৬: ডেটাবেজ ম্যানেজমেন্ট সিস্টেম"
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 2. BANGLA HELPERS & DATE UTILITIES
+    // =========================================================================
+    const BANGLA_MONTHS = [
+      "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+      "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"
+    ];
+
+    function toBanglaDigits(input) {
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      return String(input).replace(/\d/g, d => bnDigits[d]);
+    }
+
+    function formatDateKey(year, monthIndex, day) {
+      const m = String(monthIndex + 1).padStart(2, '0');
+      const d = String(day).padStart(2, '0');
+      return `${year}-${m}-${d}`;
+    }
+
+    function formatBanglaDate(dateStr) {
+      if (!dateStr) return "";
+      const [y, m, d] = dateStr.split('-').map(Number);
+      if (!y || !m || !d) return dateStr;
+      return `${toBanglaDigits(d)} ${BANGLA_MONTHS[m - 1]}, ${toBanglaDigits(y)}`;
+    }
+
+    function getDefaultFutureDate(daysAhead = 3) {
+      const dt = new Date();
+      dt.setDate(dt.getDate() + daysAhead);
+      return formatDateKey(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    }
+
+    // =========================================================================
+    // 3. APPLICATION STATE & STORAGE ENGINE (FIRESTORE + LOCAL FALLBACK)
+    // =========================================================================
+    let state = {
+      students: [], // Array of { id, name, studentClass, tasks: [], taughtDates: [], createdAt }
+      selectedStudentId: null,
+      taskFilter: 'ALL',
+      calYear: new Date().getFullYear(),
+      calMonth: new Date().getMonth(),
+      useCloud: false,
+      db: null,
+      userId: null,
+      appId: 'default-app-id'
+    };
+
+    const LOCAL_BACKUP_KEY = 'student_tracker_backup_v1';
+
+    function saveLocalBackup() {
+      try {
+        localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify({
+          students: state.students,
+          selectedStudentId: state.selectedStudentId
+        }));
+      } catch (e) {
+        console.warn("Local backup unavailable", e);
+      }
+    }
+
+    function loadLocalBackup() {
+      try {
+        const raw = localStorage.getItem(LOCAL_BACKUP_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.students)) {
+            state.students = parsed.students;
+            state.selectedStudentId = parsed.selectedStudentId || (state.students[0]?.id ?? null);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to read local backup", e);
+      }
+    }
+
+    function updateSyncBadge(mode) {
+      const badge = document.getElementById('syncStatusBadge');
+      if (mode === 'cloud') {
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> ক্লাউড সিঙ্ক চালু`;
+      } else {
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> অটো-সেভ চালু`;
+      }
+    }
+
+    async function initStorage() {
+      // Load local first for instant render
+      loadLocalBackup();
+      renderAll();
+
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          state.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+          const app = initializeApp(firebaseConfig);
+          const auth = getAuth(app);
+          const db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+
+          if (auth.currentUser) {
+            state.db = db;
+            state.userId = auth.currentUser.uid;
+            state.useCloud = true;
+            updateSyncBadge('cloud');
+
+            // Listen to user's private students collection
+            const studentsCol = collection(db, 'artifacts', state.appId, 'users', state.userId, 'students');
+            onSnapshot(studentsCol, (snapshot) => {
+              const cloudStudents = [];
+              snapshot.forEach((docSnap) => {
+                cloudStudents.push({ id: docSnap.id, ...docSnap.data() });
+              });
+              // Sort in JS memory by createdAt ascending
+              cloudStudents.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+              state.students = cloudStudents;
+              if (!state.selectedStudentId || !state.students.some(s => s.id === state.selectedStudentId)) {
+                state.selectedStudentId = state.students.length > 0 ? state.students[0].id : null;
+              }
+              saveLocalBackup();
+              renderAll();
+            }, (err) => {
+              console.error("Firestore snapshot error:", err);
+              state.useCloud = false;
+              updateSyncBadge('local');
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Falling back to local storage mode:", err);
+      }
+
+      state.useCloud = false;
+      updateSyncBadge('local');
+    }
+
+    async function persistStudent(studentObj) {
+      // Update in-memory list
+      const idx = state.students.findIndex(s => s.id === studentObj.id);
+      if (idx >= 0) {
+        state.students[idx] = studentObj;
+      } else {
+        state.students.push(studentObj);
+      }
+      saveLocalBackup();
+      renderAll();
+
+      if (state.useCloud && state.db && state.userId) {
+        try {
+          const docRef = doc(state.db, 'artifacts', state.appId, 'users', state.userId, 'students', studentObj.id);
+          await setDoc(docRef, {
+            name: studentObj.name,
+            studentClass: studentObj.studentClass,
+            tasks: studentObj.tasks || [],
+            taughtDates: studentObj.taughtDates || [],
+            createdAt: studentObj.createdAt || Date.now()
+          });
+        } catch (e) {
+          console.error("Error saving student to Firestore:", e);
+        }
+      }
+    }
+
+    async function removeStudentById(studentId) {
+      state.students = state.students.filter(s => s.id !== studentId);
+      if (state.selectedStudentId === studentId) {
+        state.selectedStudentId = state.students[0]?.id ?? null;
+      }
+      saveLocalBackup();
+      renderAll();
+
+      if (state.useCloud && state.db && state.userId) {
+        try {
+          const docRef = doc(state.db, 'artifacts', state.appId, 'users', state.userId, 'students', studentId);
+          await deleteDoc(docRef);
+        } catch (e) {
+          console.error("Error deleting student:", e);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 4. UI HELPERS (TOAST, MODAL, CLIPBOARD)
+    // =========================================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = type === 'success'
+        ? 'bg-slate-900 text-white border-slate-700'
+        : type === 'warning'
+        ? 'bg-amber-600 text-white border-amber-500'
+        : 'bg-rose-600 text-white border-rose-500';
+
+      const icon = type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-circle-info text-white';
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${colors}`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function openConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').textContent = message;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+      const proceedBtn = document.getElementById('confirmProceedBtn');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        cancelBtn.onclick = null;
+        proceedBtn.onclick = null;
+      };
+
+      cancelBtn.onclick = cleanup;
+      proceedBtn.onclick = () => {
+        cleanup();
+        onConfirm();
+      };
+    }
+
+    function copyTextFallback(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('হোয়াটসঅ্যাপ মেসেজ কপি হয়েছে!');
+      } catch (err) {
+        showToast('কপি করা সম্ভব হয়নি', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // =========================================================================
+    // 5. RENDERING ENGINE
+    // =========================================================================
+    function getActiveStudent() {
+      return state.students.find(s => s.id === state.selectedStudentId) || null;
+    }
+
+    function renderStudentDropdown() {
+      const dropdown = document.getElementById('activeStudentDropdown');
+      const deleteBtn = document.getElementById('deleteStudentBtn');
+      const totalBadge = document.getElementById('totalStudentsBadge');
+
+      totalBadge.textContent = `মোট: ${toBanglaDigits(state.students.length)} জন`;
+
+      if (state.students.length === 0) {
+        dropdown.innerHTML = `<option value="">-- কোনো স্টুডেন্ট নেই --</option>`;
+        deleteBtn.classList.add('hidden');
+        return;
+      }
+
+      deleteBtn.classList.remove('hidden');
+      dropdown.innerHTML = state.students.map(s => {
+        const selected = s.id === state.selectedStudentId ? 'selected' : '';
+        return `<option value="${s.id}" ${selected}>${s.name} (${s.studentClass} বিজ্ঞান)</option>`;
+      }).join('');
+    }
+
+    function populateSubjectsAndChapters(studentClass, preserveSelection = true) {
+      const subjectSelect = document.getElementById('subjectSelect');
+      const chapterSelect = document.getElementById('chapterSelect');
+      const classCurriculum = CURRICULUM[studentClass] || CURRICULUM.SSC;
+      const subjects = Object.keys(classCurriculum);
+
+      const prevSubject = preserveSelection ? subjectSelect.value : '';
+      subjectSelect.innerHTML = subjects.map(sub => `<option value="${sub}">${sub}</option>`).join('');
+
+      if (prevSubject && subjects.includes(prevSubject)) {
+        subjectSelect.value = prevSubject;
+      }
+
+      const selectedSub = subjectSelect.value;
+      const chapters = classCurriculum[selectedSub] || [];
+      const prevChapter = preserveSelection ? chapterSelect.value : '';
+
+      chapterSelect.innerHTML = chapters.map(ch => `<option value="${ch}">${ch}</option>`).join('');
+      if (prevChapter && chapters.includes(prevChapter)) {
+        chapterSelect.value = prevChapter;
+      }
+    }
+
+    function renderTaskList(student) {
+      const container = document.getElementById('taskListContainer');
+      let tasks = [...(student.tasks || [])];
+
+      // Filter
+      if (state.taskFilter !== 'ALL') {
+        tasks = tasks.filter(t => t.type === state.taskFilter);
+      }
+
+      // Sort: uncompleted first, then by date ascending
+      tasks.sort((a, b) => {
+        if (Boolean(a.completed) !== Boolean(b.completed)) {
+          return a.completed ? 1 : -1;
+        }
+        return (a.date || '').localeCompare(b.date || '');
+      });
+
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200">
+            <p class="text-xs font-medium text-slate-500">এই ক্যাটাগরিতে এখনো কোনো পড়া বা পরীক্ষা যুক্ত করা হয়নি।</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => {
+        const isExam = task.type === 'পরীক্ষা';
+        const badgeClass = isExam
+          ? 'bg-rose-100 text-rose-700 border-rose-200'
+          : 'bg-sky-100 text-sky-700 border-sky-200';
+        const iconClass = isExam ? 'fa-file-pen' : 'fa-book-open';
+        const cardOpacity = task.completed ? 'opacity-65 bg-slate-50' : 'bg-white';
+        const titleStrike = task.completed ? 'line-through text-slate-500' : 'text-slate-900';
+        const dateLabel = isExam ? 'পরীক্ষার তারিখ' : 'জমা দেওয়ার তারিখ';
+
+        return `
+          <div class="p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 transition shadow-2xs ${cardOpacity}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-2.5 min-w-0">
+                <button 
+                  type="button" 
+                  data-action="toggle-task" 
+                  data-task-id="${task.id}"
+                  title="${task.completed ? 'অসম্পূর্ণ হিসেবে মার্ক করুন' : 'সম্পন্ন হয়েছে মার্ক করুন'}"
+                  class="mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition cursor-pointer ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-500 bg-white'}"
+                >
+                  ${task.completed ? '<i class="fa-solid fa-check text-[11px]"></i>' : ''}
+                </button>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border ${badgeClass}">
+                      <i class="fa-solid ${iconClass} text-[10px]"></i>
+                      ${task.type}
+                    </span>
+                    <span class="text-xs font-bold text-indigo-700 truncate">${task.subject}</span>
+                  </div>
+                  <p class="text-sm font-bold mt-1 ${titleStrike}">${task.chapter}</p>
+                  <p class="text-xs text-slate-600 mt-0.5"><span class="font-semibold">ডিটেইলস:</span> ${task.details}</p>
+                  <div class="flex items-center gap-1.5 mt-1.5 text-[11px] font-semibold ${isExam ? 'text-rose-600' : 'text-slate-500'}">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>${dateLabel}: ${formatBanglaDate(task.date)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1 shrink-0">
+                <button 
+                  type="button" 
+                  data-action="copy-whatsapp" 
+                  data-task-id="${task.id}"
+                  title="WhatsApp-এ পাঠানোর জন্য কপি করুন"
+                  class="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"
+                >
+                  <i class="fa-brands fa-whatsapp text-base"></i>
+                </button>
+                <button 
+                  type="button" 
+                  data-action="delete-task" 
+                  data-task-id="${task.id}"
+                  title="মুছে ফেলুন"
+                  class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCalendar(student) {
+      const grid = document.getElementById('calendarGrid');
+      const monthLabel = document.getElementById('currentMonthYearLabel');
+      const monthTaughtSummary = document.getElementById('monthTaughtSummary');
+      const monthExamSummary = document.getElementById('monthExamSummary');
+      const upcomingStrip = document.getElementById('upcomingExamsStrip');
+
+      const year = state.calYear;
+      const month = state.calMonth;
+
+      monthLabel.textContent = `${BANGLA_MONTHS[month]} ${toBanglaDigits(year)}`;
+
+      const taughtSet = new Set(student.taughtDates || []);
+      const examTasks = (student.tasks || []).filter(t => t.type === 'পরীক্ষা');
+
+      // Map exams by date string YYYY-MM-DD
+      const examsByDate = {};
+      examTasks.forEach(ex => {
+        if (!ex.date) return;
+        if (!examsByDate[ex.date]) examsByDate[ex.date] = [];
+        examsByDate[ex.date].push(ex);
+      });
+
+      const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sun
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = formatDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+      // Count taught & exams in currently viewed month
+      const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+      let taughtThisMonthCount = 0;
+      taughtSet.forEach(d => {
+        if (d.startsWith(monthPrefix)) taughtThisMonthCount++;
+      });
+
+      let examsThisMonthCount = 0;
+      Object.keys(examsByDate).forEach(d => {
+        if (d.startsWith(monthPrefix)) examsThisMonthCount += examsByDate[d].length;
+      });
+
+      monthTaughtSummary.innerHTML = `<i class="fa-solid fa-calendar-check"></i> এই মাসে মোট পড়ানো হয়েছে: ${toBanglaDigits(taughtThisMonthCount)} দিন`;
+      monthExamSummary.innerHTML = `<i class="fa-solid fa-file-pen"></i> পরীক্ষা: ${toBanglaDigits(examsThisMonthCount)} টি`;
+      document.getElementById('bannerTaughtCount').textContent = `${toBanglaDigits(taughtThisMonthCount)} দিন`;
+
+      let cellsHtml = '';
+
+      // Leading empty cells
+      for (let i = 0; i < firstDayOfMonth; i++) {
+        cellsHtml += `<div class="min-h-[74px] sm:min-h-[86px] rounded-xl bg-slate-50/50 border border-transparent"></div>`;
+      }
+
+      // Actual days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = formatDateKey(year, month, day);
+        const isTaught = taughtSet.has(dateKey);
+        const dayExams = examsByDate[dateKey] || [];
+        const hasExam = dayExams.length > 0;
+        const isToday = dateKey === todayStr;
+
+        // Cell styling based on taught status and exam status
+        let cellBg = 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800';
+        if (isTaught && hasExam) {
+          cellBg = 'bg-emerald-500 border-emerald-600 text-white shadow-sm ring-2 ring-rose-400';
+        } else if (isTaught) {
+          cellBg = 'bg-emerald-500 hover:bg-emerald-600 border-emerald-600 text-white shadow-sm';
+        } else if (hasExam) {
+          cellBg = 'bg-rose-50/90 hover:bg-rose-100/80 border-rose-300 text-slate-900';
+        }
+
+        const todayRing = isToday && !isTaught ? 'ring-2 ring-indigo-500 ring-offset-1' : '';
+        const examTooltip = hasExam
+          ? dayExams.map(e => `${e.subject} (${e.chapter})`).join(' | ')
+          : '';
+
+        cellsHtml += `
+          <button
+            type="button"
+            data-date="${dateKey}"
+            title="${hasExam ? 'পরীক্ষা: ' + examTooltip + ' | ' : ''}পড়ানোর দিন মার্ক করতে ক্লিক করুন"
+            class="calendar-cell min-h-[74px] sm:min-h-[86px] p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between text-left relative cursor-pointer ${cellBg} ${todayRing}"
+          >
+            <div class="w-full flex items-center justify-between">
+              <span class="text-sm sm:text-base font-bold leading-none ${isTaught ? 'text-white' : isToday ? 'text-indigo-600' : 'text-slate-800'}">
+                ${toBanglaDigits(day)}
+              </span>
+              ${isTaught ? '<i class="fa-solid fa-circle-check text-xs text-white/95"></i>' : ''}
+            </div>
+
+            <div class="w-full space-y-1 mt-1">
+              ${isTaught ? `
+                <div class="text-[10px] sm:text-[11px] font-bold leading-tight bg-black/15 px-1.5 py-0.5 rounded text-white truncate">
+                  পড়ানো হয়েছে
+                </div>
+              ` : ''}
+
+              ${hasExam ? `
+                <div class="text-[10px] sm:text-[11px] font-bold leading-tight px-1.5 py-0.5 rounded truncate ${isTaught ? 'bg-rose-600 text-white border border-rose-300' : 'bg-rose-600 text-white shadow-2xs'}">
+                  পরীক্ষা আছে
+                </div>
+                <div class="hidden sm:block text-[10px] leading-tight truncate font-medium ${isTaught ? 'text-emerald-50' : 'text-rose-700'}">
+                  ${dayExams[0].subject.split(' ')[0]}
+                </div>
+              ` : ''}
+            </div>
+          </button>
+        `;
+      }
+
+      grid.innerHTML = cellsHtml;
+
+      // Render Upcoming Exams Strip (all exams >= today or in current view)
+      const sortedExams = [...examTasks].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      if (sortedExams.length === 0) {
+        upcomingStrip.innerHTML = `
+          <div class="col-span-full text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200/70">
+            এই স্টুডেন্টের জন্য এখনো কোনো পরীক্ষার তারিখ নির্ধারণ করা হয়নি। বাম পাশের ফর্মে ধরন হিসেবে <strong>"পরীক্ষা"</strong> সিলেক্ট করে যোগ করলে এখানে এবং ক্যালেন্ডারে দেখাবে।
+          </div>
+        `;
+      } else {
+        upcomingStrip.innerHTML = sortedExams.map(ex => {
+          const isPast = ex.date < todayStr;
+          return `
+            <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border ${isPast ? 'bg-slate-50 border-slate-200 opacity-75' : 'bg-rose-50/70 border-rose-200'}">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-rose-600 text-white'}">
+                    ${formatBanglaDate(ex.date)}
+                  </span>
+                  <span class="text-xs font-bold text-slate-800 truncate">${ex.subject}</span>
+                </div>
+                <p class="text-xs text-slate-600 truncate mt-1">${ex.chapter} (${ex.details})</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderAll() {
+      renderStudentDropdown();
+      const student = getActiveStudent();
+      const emptyState = document.getElementById('emptyStateContainer');
+      const workspace = document.getElementById('studentWorkspace');
+
+      if (!student) {
+        emptyState.classList.remove('hidden');
+        workspace.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      workspace.classList.remove('hidden');
+
+      // Update student banner
+      document.getElementById('studentAvatar').textContent = student.name.trim().charAt(0) || 'S';
+      document.getElementById('activeStudentNameDisplay').textContent = student.name;
+      document.getElementById('activeStudentClassBadge').textContent = `${student.studentClass} বিজ্ঞান বিভাগ`;
+
+      const tasks = student.tasks || [];
+      const activeStudies = tasks.filter(t => t.type === 'পড়া' && !t.completed).length;
+      const activeExams = tasks.filter(t => t.type === 'পরীক্ষা' && !t.completed).length;
+
+      document.getElementById('bannerStudyCount').textContent = toBanglaDigits(activeStudies);
+      document.getElementById('bannerExamCount').textContent = toBanglaDigits(activeExams);
+
+      // Populate subjects/chapters for student's class
+      populateSubjectsAndChapters(student.studentClass, true);
+
+      // Render Section 1 & Section 2
+      renderTaskList(student);
+      renderCalendar(student);
+    }
+
+    // =========================================================================
+    // 6. EVENT LISTENERS
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default date in form
+      document.getElementById('taskDateInput').value = getDefaultFutureDate(3);
+
+      // 1. Add Student Form
+      document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('studentNameInput');
+        const classSelect = document.getElementById('studentClassSelect');
+        const name = nameInput.value.trim();
+        const studentClass = classSelect.value;
+
+        if (!name) return;
+
+        const newStudent = {
+          id: 'stu_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          name,
+          studentClass,
+          tasks: [],
+          taughtDates: [],
+          createdAt: Date.now()
+        };
+
+        state.selectedStudentId = newStudent.id;
+        nameInput.value = '';
+        await persistStudent(newStudent);
+        populateSubjectsAndChapters(newStudent.studentClass, false);
+        showToast(`${name} (${studentClass}) সফলভাবে সেভ হয়েছে!`);
+      });
+
+      // 2. Active Student Dropdown Change
+      document.getElementById('activeStudentDropdown').addEventListener('change', (e) => {
+        state.selectedStudentId = e.target.value || null;
+        saveLocalBackup();
+        const student = getActiveStudent();
+        if (student) {
+          populateSubjectsAndChapters(student.studentClass, false);
+        }
+        renderAll();
+      });
+
+      // 3. Delete Student Button
+      document.getElementById('deleteStudentBtn').addEventListener('click', () => {
+        const student = getActiveStudent();
+        if (!student) return;
+        openConfirmModal(
+          'স্টুডেন্ট মুছে ফেলুন',
+          `আপনি কি নিশ্চিতভাবে "${student.name}" এবং তার সব পড়া, পরীক্ষা ও ক্যালেন্ডার তথ্য মুছে ফেলতে চান?`,
+          async () => {
+            await removeStudentById(student.id);
+            showToast('স্টুডেন্টের তথ্য মুছে ফেলা হয়েছে', 'warning');
+          }
+        );
+      });
+
+      // 4. Subject Change -> Update Chapters
+      document.getElementById('subjectSelect').addEventListener('change', () => {
+        const student = getActiveStudent();
+        if (student) {
+          populateSubjectsAndChapters(student.studentClass, true);
+        }
+      });
+
+      // 5. Task Type Change -> Update Date Label Dynamically
+      document.getElementById('taskTypeSelect').addEventListener('change', (e) => {
+        const label = document.getElementById('taskDateLabel');
+        if (e.target.value === 'পরীক্ষা') {
+          label.textContent = 'পরীক্ষা নেওয়ার তারিখ';
+          label.classList.add('text-rose-700');
+        } else {
+          label.textContent = 'পড়া জমা দেওয়ার তারিখ';
+          label.classList.remove('text-rose-700');
+        }
+      });
+
+      // 6. Add Study/Exam Assignment Form
+      document.getElementById('taskForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const student = getActiveStudent();
+        if (!student) return;
+
+        const subject = document.getElementById('subjectSelect').value;
+        const chapter = document.getElementById('chapterSelect').value;
+        const type = document.getElementById('taskTypeSelect').value;
+        const date = document.getElementById('taskDateInput').value;
+        const detailsInput = document.getElementById('taskDetailsInput');
+        const details = detailsInput.value.trim();
+
+        if (!subject || !chapter || !date || !details) return;
+
+        const newTask = {
+          id: 'tsk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          subject,
+          chapter,
+          type,
+          date,
+          details,
+          completed: false,
+          createdAt: Date.now()
+        };
+
+        const updatedStudent = {
+          ...student,
+          tasks: [...(student.tasks || []), newTask]
+        };
+
+        // Jump calendar to the exam month if user scheduled an exam so they see it marked immediately
+        if (type === 'পরীক্ষা') {
+          const [y, m] = date.split('-').map(Number);
+          if (y && m) {
+            state.calYear = y;
+            state.calMonth = m - 1;
+          }
+        }
+
+        detailsInput.value = '';
+        await persistStudent(updatedStudent);
+        showToast(type === 'পরীক্ষা' ? 'পরীক্ষার তারিখ যুক্ত ও ক্যালেন্ডারে মার্ক করা হয়েছে!' : 'নতুন পড়া যুক্ত করা হয়েছে!');
+      });
+
+      // 7. Task Filter Buttons
+      document.querySelectorAll('.task-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.taskFilter = btn.dataset.filter;
+          document.querySelectorAll('.task-filter-btn').forEach(b => {
+            if (b.dataset.filter === state.taskFilter) {
+              b.className = 'task-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-indigo-100 text-indigo-700 cursor-pointer';
+            } else {
+              b.className = 'task-filter-btn px-2.5 py-1 rounded-lg font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer';
+            }
+          });
+          const student = getActiveStudent();
+          if (student) renderTaskList(student);
+        });
+      });
+
+      // 8. Task List Actions (Toggle Complete, Copy WhatsApp, Delete)
+      document.getElementById('taskListContainer').addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const student = getActiveStudent();
+        if (!student) return;
+
+        const action = btn.dataset.action;
+        const taskId = btn.dataset.taskId;
+        const tasks = student.tasks || [];
+        const targetTask = tasks.find(t => t.id === taskId);
+        if (!targetTask) return;
+
+        if (action === 'toggle-task') {
+          const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
+          await persistStudent({ ...student, tasks: updatedTasks });
+          showToast(targetTask.completed ? 'পুনরায় চলমান তালিকায় নেওয়া হয়েছে' : 'সম্পন্ন হিসেবে মার্ক করা হয়েছে!');
+        } else if (action === 'copy-whatsapp') {
+          const header = targetTask.type === 'পরীক্ষা' ? '📝 *পরীক্ষার নোটিশ*' : '📘 *আজকের পড়া (Homework)*';
+          const dateLabel = targetTask.type === 'পরীক্ষা' ? 'পরীক্ষার তারিখ' : 'জমা দেওয়ার তারিখ';
+          const msg = `${header}\n👤 স্টুডেন্ট: ${student.name} (${student.studentClass})\n📚 বিষয়: ${targetTask.subject}\n📖 অধ্যায়: ${targetTask.chapter}\n📄 ডিটেইলস: ${targetTask.details}\n📅 ${dateLabel}: ${formatBanglaDate(targetTask.date)}`;
+          copyTextFallback(msg);
+        } else if (action === 'delete-task') {
+          const updatedTasks = tasks.filter(t => t.id !== taskId);
+          await persistStudent({ ...student, tasks: updatedTasks });
+          showToast('অ্যাসাইনমেন্ট মুছে ফেলা হয়েছে', 'warning');
+        }
+      });
+
+      // 9. Calendar Date Click -> Toggle Teaching Attendance Day
+      document.getElementById('calendarGrid').addEventListener('click', async (e) => {
+        const cell = e.target.closest('button[data-date]');
+        if (!cell) return;
+        const student = getActiveStudent();
+        if (!student) return;
+
+        const dateKey = cell.dataset.date;
+        const currentDates = new Set(student.taughtDates || []);
+        let added = false;
+
+        if (currentDates.has(dateKey)) {
+          currentDates.delete(dateKey);
+          added = false;
+        } else {
+          currentDates.add(dateKey);
+          added = true;
+        }
+
+        const updatedDates = Array.from(currentDates).sort();
+        await persistStudent({ ...student, taughtDates: updatedDates });
+        showToast(
+          added
+            ? `${formatBanglaDate(dateKey)} — পড়ানো হয়েছে হিসেবে সেভ হলো`
+            : `${formatBanglaDate(dateKey)} — সিলেকশন বাতিল করা হলো`,
+          added ? 'success' : 'warning'
+        );
+      });
+
+      // 10. Calendar Month Navigation
+      document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        state.calMonth--;
+        if (state.calMonth < 0) {
+          state.calMonth = 11;
+          state.calYear--;
+        }
+        const student = getActiveStudent();
+        if (student) renderCalendar(student);
+      });
+
+      document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        state.calMonth++;
+        if (state.calMonth > 11) {
+          state.calMonth = 0;
+          state.calYear++;
+        }
+        const student = getActiveStudent();
+        if (student) renderCalendar(student);
+      });
+
+      document.getElementById('goTodayBtn').addEventListener('click', () => {
+        const now = new Date();
+        state.calYear = now.getFullYear();
+        state.calMonth = now.getMonth();
+        const student = getActiveStudent();
+        if (student) renderCalendar(student);
+      });
+
+      // Initialize Storage & Data
+      initStorage();
+    });
+  </script>
+</body>
+</html>
