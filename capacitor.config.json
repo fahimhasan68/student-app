@@ -1,6 +1,6 @@
 {
   "appId": "com.deeplrn.studenttracker",
   "appName": "Student Tracker",
-  "webDir": "www",
+  "webDir": ".",
   "bundledWebRuntime": false
 }
